@@ -6,6 +6,7 @@ public class Main {
 		Bot bot = new Bot();
 		Scanner in = new Scanner(System.in);
 		String input = "";
+		bot.teach();
 		do {
 			System.out.println("Bot hunger level: " + bot.getHunger());
 			System.out.print("Message:");

@@ -1,6 +1,6 @@
 package com.languagebot.sahaj;
 
-import java.util.HashMap;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Bot {
@@ -24,6 +24,86 @@ public class Bot {
 	
 	public int getHunger() {
 		return hunger;
+	}
+	
+	public void teach() {
+		String[] baseMessages = {
+								"I will feed you",
+								"I will not feed you",
+								"I will not not feed you",
+								"I do not want to give you food",
+								"I want to give you food",
+								"No I will not give you food",
+								"Yes I will give you food",
+								};
+		Random rand = new Random();
+		String choice = "";
+		int msgRand, trust;
+		boolean flag;
+		for(int j = 0; j < 100; j++) {
+			trust = 0;
+			flag = false;
+			msgRand = rand.nextInt(baseMessages.length);
+			String msg = baseMessages[msgRand];
+			String[] words = msg.toLowerCase().split(" ");
+			predict(words);
+			if(msgRand % 2 == 0) {
+				choice = "y";
+			}
+			else {
+				choice = "n";
+			}
+			if(choice.equals("y")) {
+				this.feed();
+				if(prediction.equals("no")) {
+					trust = 2;
+				}
+			}
+			else if(choice.equals("n")) {
+				this.ignore();
+				if(prediction.equals("yes")) {
+					trust = -2;
+				}
+			}
+			
+			for(int i = 0; i < words.length; i++) {
+				Node n = vocab.contains(words[i]);
+				flag = false;
+				if(n == null) {
+					n = new Node(words[i]);
+					n.setFreq(1);
+					vocab.addNode(n);
+					flag = true;
+				}
+				if(i != words.length-1) {
+					DirectedEdge e = n.connectedTo(words[i+1]);
+					if(e == null) {
+						Node to = vocab.contains(words[i+1]);
+						flag = true;
+						if(to == null) {
+							to = new Node(words[i+1]);
+						}
+						e = new DirectedEdge(0, n, to);
+						n.setFreq(n.getFreq()+1);
+						n.addEdge(e);
+						vocab.addNode(to);
+						vocab.addEdge(e);
+					}
+					if(choice.equals("y")) {
+						e.setWeight(e.getWeight()+1);
+						if(flag) {
+							e.setWeight(e.getWeight()+trust);
+						}
+					}
+					else if(choice.equals("n")) {
+						e.setWeight(e.getWeight()-1);
+						if(flag) {
+							e.setWeight(e.getWeight()+trust);
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	public void listen(String msg) {
@@ -126,11 +206,11 @@ public class Bot {
 		System.out.println(total);
 		if(total >= 50.0) {
 			prediction = "yes";
-			System.out.println("I will get fed");
+			System.out.println("positive");
 		}
 		else {
 			prediction = "no";
-			System.out.println("I will not get fed");
+			System.out.println("negative");
 		}
 	}
 	
