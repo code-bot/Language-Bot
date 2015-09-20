@@ -5,16 +5,12 @@ import java.util.Scanner;
 
 public class Bot {
 	private int hunger;
-	/*private HashMap<String, Integer> mem;
-	private HashMap<String, Integer> feedback;*/
 	private Scanner in = new Scanner(System.in);
 	private String prediction = "";
 	private DirectedGraph vocab;
 	
 	public Bot() {
 		hunger = 50;
-		/*mem = new HashMap<String,Integer>();
-		feedback = new HashMap<String, Integer>();*/
 		vocab = new DirectedGraph();
 	}
 	
@@ -88,26 +84,6 @@ public class Bot {
 				}
 			}
 		}
-		/*for(int i = 0; i < words.length; i++) {
-			if(mem.containsKey(words[i])) {
-				mem.put(words[i], mem.get(words[i])+1);
-				if(choice.equals("y")) {
-					feedback.put(words[i], feedback.get(words[i])+1-trust);
-				}
-				else if(choice.equals("n")) {
-					feedback.put(words[i], feedback.get(words[i])-1-trust);
-				}
-			}
-			else {
-				mem.put(words[i], 1);
-				if(choice.equals("y")) {
-					feedback.put(words[i], 1+trust);
-				}
-				else if(choice.equals("n")) {
-					feedback.put(words[i], -1+trust);
-				}
-			}
-		}*/
 	}
 	
 	private void predict(String[] input) {
@@ -156,31 +132,9 @@ public class Bot {
 			prediction = "no";
 			System.out.println("I will not get fed");
 		}
-		//Check individual phrases
-		//Check words and weights of attached edges
-		/*double chance = 50;
-		for(int i = 0; i < input.length; i++) {
-			if(mem.containsKey(input[i])) {
-				chance += (100.0/input.length)*
-					((double)feedback.get(input[i])/(double) mem.get(input[i]));
-			}
-		}
-		System.out.println(chance);
-		if(chance >= 50.0) {
-			prediction = "yes";
-			System.out.println("I will get fed");
-		}
-		else {
-			prediction = "no";
-			System.out.println("I will not get fed");
-		}*/
 	}
 	
 	public void brainDump() {
 		System.out.println(vocab);
-		/*System.out.println("Memory:");
-		System.out.println(mem);
-		System.out.println("Feedback:");
-		System.out.println(feedback);*/
 	}
 }
