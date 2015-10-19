@@ -68,7 +68,7 @@ public class DirectedEdge {
 	@Override
 	public String toString() {
 		String s = "";
-		s += "[" + pos + ", " + tail + "]";
+		s += "[" + (pos - neg) + ", " + tail + "]";
 		return s;
 	}
 }

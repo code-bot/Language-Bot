@@ -1,5 +1,6 @@
 package com.languagebot.sahaj;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -8,10 +9,18 @@ public class Bot {
 	private Scanner in = new Scanner(System.in);
 	private String prediction = "";
 	private DirectedGraph vocab;
+	private static ArrayList<String> negationWords;
 	
 	public Bot() {
 		hunger = 50;
 		vocab = new DirectedGraph();
+		negationWords = new ArrayList<String>();
+		negationWords.add("not");
+		negationWords.add("can't");
+		negationWords.add("won't");
+		negationWords.add("don't");
+		negationWords.add("shouldn't");
+		negationWords.add("never");
 	}
 	
 	public void feed() {
@@ -31,7 +40,7 @@ public class Bot {
 								"I will feed you",
 								"I will not feed you",
 								"I will not not feed you",
-								"I do not want to give you food",
+								"I don't want to give you food",
 								"I want to give you food",
 								"No I will not give you food",
 								"Yes I will give you food",
@@ -60,10 +69,13 @@ public class Bot {
 	
 	public void listen(String msg, String choice) {
 		int finalCV;
-		boolean flag = false;
+		int negation = 1;
 		msg = msg.toLowerCase();
 		String[] words = msg.split(" ");
+		System.out.println("----------------Before Prediction----------------");
+		this.brainDump();
 		finalCV = predict(words);
+		System.out.println("----------------After Prediction----------------");
 		if(choice.equals("y")) {
 			this.feed();
 		}
@@ -79,8 +91,8 @@ public class Bot {
 		for(int i = 0; i < words.length-1; i++) {
 			n = vocab.contains(words[i]);
 			DirectedEdge e = n.connectedTo(words[i+1]);
+			Node to = vocab.contains(words[i+1]);
 			if(e == null) {
-				Node to = vocab.contains(words[i+1]);
 				if(to == null) {
 					to = new Node(words[i+1]);
 					vocab.addNode(to);
@@ -89,36 +101,38 @@ public class Bot {
 				n.addEdge(e);
 				vocab.addEdge(e);
 			}
-			if(choice.equals("y")) {
-				if(prediction.equals("no")) {
-					if(e.getConnotationVal() < 0) {
-						e.incrementPos(Math.abs(e.getConnotationVal()));
-					}
-					else if(e.getConnotationVal() > 0) {
-						e.incrementPos(Math.abs(finalCV));
-					}
-					else {
-						e.incrementPos(Math.abs(finalCV)/2);
-					}
-				}
-				else {
-					e.incrementPos(1);
-				}
-			}
-			else if(choice.equals("n")) {
-				if(prediction.equals("yes")) {
-					if(e.getConnotationVal() > 0) {
-						e.incrementNeg(Math.abs(e.getConnotationVal()));
-					}
-					else if(e.getConnotationVal() < 0) {
-						e.incrementNeg(Math.abs(finalCV));
+			if(!(negationWords.contains(n.getWord()) || negationWords.contains(to.getWord()))) {	
+				if(choice.equals("y")) {
+					if(prediction.equals("no")) {
+						if(e.getConnotationVal() < 0) {
+							e.incrementPos(Math.abs(e.getConnotationVal()));
+						}
+						else if(e.getConnotationVal() > 0) {
+							e.incrementPos(Math.abs(finalCV));
+						}
+						else {
+							e.incrementPos(Math.abs(finalCV)/2);
+						}
 					}
 					else {
-						e.incrementNeg(Math.abs(finalCV)/2);
+						e.incrementPos(1);
 					}
 				}
-				else {
-					e.incrementNeg(1);
+				else if(choice.equals("n")) {
+					if(prediction.equals("yes")) {
+						if(e.getConnotationVal() > 0) {
+							e.incrementNeg(Math.abs(e.getConnotationVal()));
+						}
+						else if(e.getConnotationVal() < 0) {
+							e.incrementNeg(Math.abs(finalCV));
+						}
+						else {
+							e.incrementNeg(Math.abs(finalCV)/2);
+						}
+					}
+					else {
+						e.incrementNeg(1);
+					}
 				}
 			}
 		}
@@ -164,6 +178,7 @@ public class Bot {
 	
 	private int predict(String[] input) {
 		Node n = vocab.contains(input[0]);
+		int negation = 1;
 		int total = 0;
 		boolean flag;
 		for(int i = 1; i < input.length; i++) {
@@ -171,12 +186,20 @@ public class Bot {
 			if(n != null) {
 				for(DirectedEdge e : n.getEdges()) {
 					if(e.getTail().getWord().equals(input[i])) {
-						total += e.getConnotationVal();
+						if(negationWords.contains(n.getWord())) {
+							negation *= -1;
+						}
+						else {
+							total += e.getConnotationVal();
+						}
 						n = e.getTail();
 						flag = false;
 						break;
 					}
 				}
+			}
+			else if(negationWords.contains(input[i-1])) {
+				negation *= -1;
 			}
 			if(flag) {
 				n = vocab.contains(input[i]);
@@ -219,6 +242,7 @@ public class Bot {
 				}while(n == null);
 			}
 		}*/
+		total *= negation;
 		System.out.println(total);
 		if(total >= 0) {
 			prediction = "yes";
