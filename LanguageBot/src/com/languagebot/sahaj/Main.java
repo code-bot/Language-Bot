@@ -14,7 +14,7 @@ public class Main {
 			System.out.println(input);
 			if(input != "quit")
 			{
-				bot.listen(input);
+				bot.ask(input);
 				bot.brainDump();
 			}
 		}while(!input.equals("quit"));

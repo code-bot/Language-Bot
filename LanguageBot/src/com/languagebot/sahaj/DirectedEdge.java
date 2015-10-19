@@ -1,23 +1,32 @@
 package com.languagebot.sahaj;
 
 public class DirectedEdge {
-	int weight;
-	Node head, tail;
+	private int pos, neg;
+	private int connotationVal;
+	private Node head, tail;
 	
 	public DirectedEdge() {
-		weight = 0;
+		connotationVal = 0;
+		pos = 0;
+		neg = 0;
 		head = null;
 		tail = null;
 	}
 	
-	public DirectedEdge(int w, Node h, Node t) {
-		weight = w;
-		head = h;
-		tail = t;
+	public DirectedEdge(Node head, Node tail) {
+		connotationVal = 0;
+		pos = 0;
+		neg = 0;
+		this.head = head;
+		this.tail = tail;
 	}
 	
-	public int getWeight() {
-		return weight;
+	public double getPos() {
+		return pos;
+	}
+	
+	public double getNeg() {
+		return neg;
 	}
 	
 	public Node getHead() {
@@ -28,14 +37,38 @@ public class DirectedEdge {
 		return tail;
 	}
 	
-	public void setWeight(int w) {
-		weight = w;
+	public int getFreq() {
+		return pos + neg;
+	}
+	
+	public int getConnotationVal() {
+		return connotationVal;
+	}
+	
+	public void setPos(int val) {
+		pos = val;
+		connotationVal = pos - neg;
+	}
+	
+	public void incrementPos(int val) {
+		pos += val;
+		connotationVal = pos - neg;
+	}
+	
+	public void setNeg(int val) {
+		neg = val;
+		connotationVal = pos - neg;
+	}
+	
+	public void incrementNeg(int val) {
+		neg += val;
+		connotationVal = pos - neg;
 	}
 	
 	@Override
 	public String toString() {
 		String s = "";
-		s += "[" + weight + tail + "]";
+		s += "[" + pos + ", " + tail + "]";
 		return s;
 	}
 }

@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class DirectedGraph {
-	List<Node> nodes;
-	List<DirectedEdge> edges;
+	private List<Node> nodes;
+	private List<DirectedEdge> edges;
 	
 	public DirectedGraph() {
 		nodes = new ArrayList<Node>();
@@ -19,8 +19,8 @@ public class DirectedGraph {
 		return false;
 	}
 	
-	public void addEdge(Node from, Node to, int weight){
-		DirectedEdge e = new DirectedEdge(weight,from,to);
+	public void addEdge(Node from, Node to){
+		DirectedEdge e = new DirectedEdge(from,to);
 		edges.add(e);
 		from.addEdge(e);
 	}

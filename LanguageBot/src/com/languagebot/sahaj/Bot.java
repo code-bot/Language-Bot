@@ -38,95 +38,91 @@ public class Bot {
 								};
 		Random rand = new Random();
 		String choice = "";
-		int msgRand, trust;
-		boolean flag;
+		int msgRand;
 		for(int j = 0; j < 100; j++) {
-			trust = 0;
-			flag = false;
 			msgRand = rand.nextInt(baseMessages.length);
 			String msg = baseMessages[msgRand];
-			String[] words = msg.toLowerCase().split(" ");
-			predict(words);
 			if(msgRand % 2 == 0) {
 				choice = "y";
 			}
 			else {
 				choice = "n";
 			}
-			if(choice.equals("y")) {
-				this.feed();
-				if(prediction.equals("no")) {
-					trust = 2;
-				}
-			}
-			else if(choice.equals("n")) {
-				this.ignore();
-				if(prediction.equals("yes")) {
-					trust = -2;
-				}
-			}
-			
-			for(int i = 0; i < words.length; i++) {
-				Node n = vocab.contains(words[i]);
-				flag = false;
-				if(n == null) {
-					n = new Node(words[i]);
-					n.setFreq(1);
-					vocab.addNode(n);
-					flag = true;
-				}
-				if(i != words.length-1) {
-					DirectedEdge e = n.connectedTo(words[i+1]);
-					if(e == null) {
-						Node to = vocab.contains(words[i+1]);
-						flag = true;
-						if(to == null) {
-							to = new Node(words[i+1]);
-						}
-						e = new DirectedEdge(0, n, to);
-						n.setFreq(n.getFreq()+1);
-						n.addEdge(e);
-						vocab.addNode(to);
-						vocab.addEdge(e);
-					}
-					if(choice.equals("y")) {
-						e.setWeight(e.getWeight()+1);
-						if(flag) {
-							e.setWeight(e.getWeight()+trust);
-						}
-					}
-					else if(choice.equals("n")) {
-						e.setWeight(e.getWeight()-1);
-						if(flag) {
-							e.setWeight(e.getWeight()+trust);
-						}
-					}
-				}
-			}
+			listen(msg, choice);
 		}
 	}
 	
-	public void listen(String msg) {
-		int trust = 0;
+	public void ask(String msg) {
+		System.out.println("Do you want to feed the bot?");
+		String choice = in.nextLine();
+		listen(msg, choice);
+	}
+	
+	public void listen(String msg, String choice) {
+		int finalCV;
 		boolean flag = false;
 		msg = msg.toLowerCase();
 		String[] words = msg.split(" ");
-		predict(words);
-		System.out.println("Do you want to feed the bot?");
-		String choice = in.nextLine();
+		finalCV = predict(words);
 		if(choice.equals("y")) {
 			this.feed();
-			if(prediction.equals("no")) {
-				trust = 2;
-			}
 		}
 		else if(choice.equals("n")) {
 			this.ignore();
-			if(prediction.equals("yes")) {
-				trust = -2;
-			}
 		}
 		
+		Node n = vocab.contains(words[0]);
+		if(n == null) {
+			n = new Node(words[0]);
+			vocab.addNode(n);
+		}
+		for(int i = 0; i < words.length-1; i++) {
+			n = vocab.contains(words[i]);
+			DirectedEdge e = n.connectedTo(words[i+1]);
+			if(e == null) {
+				Node to = vocab.contains(words[i+1]);
+				if(to == null) {
+					to = new Node(words[i+1]);
+					vocab.addNode(to);
+				}
+				e = new DirectedEdge(n, to);
+				n.addEdge(e);
+				vocab.addEdge(e);
+			}
+			if(choice.equals("y")) {
+				if(prediction.equals("no")) {
+					if(e.getConnotationVal() < 0) {
+						e.incrementPos(Math.abs(e.getConnotationVal()));
+					}
+					else if(e.getConnotationVal() > 0) {
+						e.incrementPos(Math.abs(finalCV));
+					}
+					else {
+						e.incrementPos(Math.abs(finalCV)/2);
+					}
+				}
+				else {
+					e.incrementPos(1);
+				}
+			}
+			else if(choice.equals("n")) {
+				if(prediction.equals("yes")) {
+					if(e.getConnotationVal() > 0) {
+						e.incrementNeg(Math.abs(e.getConnotationVal()));
+					}
+					else if(e.getConnotationVal() < 0) {
+						e.incrementNeg(Math.abs(finalCV));
+					}
+					else {
+						e.incrementNeg(Math.abs(finalCV)/2);
+					}
+				}
+				else {
+					e.incrementNeg(1);
+				}
+			}
+		}
+		/*
 		for(int i = 0; i < words.length; i++) {
 			Node n = vocab.contains(words[i]);
 			flag = false;
@@ -163,10 +159,30 @@ public class Bot {
 					}
 				}
 			}
-		}
+		}*/
 	}
 	
-	private void predict(String[] input) {
+	private int predict(String[] input) {
+		Node n = vocab.contains(input[0]);
+		int total = 0;
+		boolean flag;
+		for(int i = 1; i < input.length; i++) {
+			flag = true;
+			if(n != null) {
+				for(DirectedEdge e : n.getEdges()) {
+					if(e.getTail().getWord().equals(input[i])) {
+						total += e.getConnotationVal();
+						n = e.getTail();
+						flag = false;
+						break;
+					}
+				}
+			}
+			if(flag) {
+				n = vocab.contains(input[i]);
+			}
+		}
+		/*
 		//Check full sentence
 		double total = 50;
 		int connotation = 0;
@@ -202,16 +218,17 @@ public class Bot {
 					else break;
 				}while(n == null);
 			}
-		}
+		}*/
 		System.out.println(total);
-		if(total >= 50.0) {
+		if(total >= 0) {
 			prediction = "yes";
 			System.out.println("positive");
 		}
-		else {
+		else if(total < 0) {
 			prediction = "no";
 			System.out.println("negative");
 		}
+		return total;
 	}
 	
 	public void brainDump() {

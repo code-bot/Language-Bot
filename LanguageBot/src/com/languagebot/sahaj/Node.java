@@ -4,31 +4,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Node {
-	String word;
-	int freq;
-	List<DirectedEdge> edges;
-	boolean visited;
+	private String word;
+	private int generalCon;
+	private List<DirectedEdge> edges;
+	private boolean visited;
 	
 	public Node() {
 		word = "";
-		freq = 0;
+		generalCon = 0;
 		visited = false;
 		edges = new ArrayList<DirectedEdge>();
 	}
 	
 	public Node(String msg) {
 		word = msg;
-		freq = 0;
+		generalCon = 0;
 		visited = false;
 		edges = new ArrayList<DirectedEdge>();
 	}
 	
-	public void setFreq(int f) {
-		freq = f;
+	public void setGeneralCon(int val) {
+		generalCon = val;
 	}
 	
-	public int getFreq() {
-		return freq;
+	public int getGeneralCon() {
+		return generalCon;
 	}
 	
 	public String getWord() {
